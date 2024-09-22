@@ -1,61 +1,30 @@
 pipeline {
     agent any
     stages {
-        stage('Create Deployment') {
+        stage('Build') {
             steps {
                 script {
-                    sh '''
-                    kubectl apply -f - <<EOF
-                    apiVersion: apps/v1
-                    kind: Deployment
-                    metadata:
-                      name: my-app
-                    spec:
-                      replicas: 2
-                      selector:
-                        matchLabels:
-                          app: my-app
-                      template:
-                        metadata:
-                          labels:
-                            app: my-app
-                        spec:
-                          containers:
-                          - name: my-app
-                            image: nginx:latest
-                            ports:
-                            - containerPort: 80
-                    EOF
-                    '''
+                    def html = '''<html>
+  <body>
+    <h1>Hello World</h1>
+  </body>
+</html>'''
+                    writeFile file: 'index.html', text: html
                 }
             }
         }
-
-        stage('Test Deployment') {
+        stage('Deploy') {
             steps {
                 script {
-                    sh 'kubectl get deployments'
-                    sh 'kubectl get pods'
+                    def label = "app=hello-world"
+                    def image = docker.build("hello-world")
+                    image.inside {
+                        sh 'cp /index.html /usr/share/nginx/html/index.html'
+                    }
+                    sh "kubectl run hello-world --image=hello-world --labels=${label} --port=80"
+                    sh "kubectl expose deployment hello-world --type=NodePort --port=80"
                 }
             }
-        }
-
-        stage('Expose Service') {
-            steps {
-                script {
-                    sh '''
-                    kubectl expose deployment my-app --type=NodePort --port=80
-                    '''
-                }
-            }
-        }
-
-        stage('Get Service Info') {
-            steps {
-                script {
-                    sh 'kubectl get svc my-app'
-                }
-            }
-        }
-    }
+        }
+    }
 }
