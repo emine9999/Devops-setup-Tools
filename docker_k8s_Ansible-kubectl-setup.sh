@@ -32,8 +32,11 @@ sleep 10
 ansible --version
 #Add docker to sudo group
 echo "--------------------Add Docker to Sudo group--------------------"
-sudo groupadd docker && sudo usermod -aG docker $USER && newgrp docker && sudo chmod 777 /var/run/docker.sock
-#Show Jenkins Password
+sudo groupadd docker || true  # Ignores error if the group already exists
+sudo usermod -aG docker $USER
+newgrp docker
+sudo chmod 777 /var/run/docker.sock
+
 
 # Installing Minikube
 echo "Installing Minikube..."

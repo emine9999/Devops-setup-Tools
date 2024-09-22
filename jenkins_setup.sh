@@ -23,8 +23,6 @@ sudo systemctl start jenkins
 # Enable Jenkins to start on boot
 sudo systemctl enable jenkins
 
-# Print Jenkins status
-sudo systemctl status jenkins
 
 #Modify Firewall to Allow Jenkins
 sudo ufw allow 8080
