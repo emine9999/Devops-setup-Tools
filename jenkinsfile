@@ -13,18 +13,22 @@ pipeline {
                 }
             }
         }
-        stage('Deploy') {
+        stage('Docker Build and Deploy') {
             steps {
                 script {
                     def label = "app=hello-world"
                     def image = docker.build("hello-world")
+
+                    // Copy the index.html to the proper location in the image
                     image.inside {
-                        sh 'cp /index.html /usr/share/nginx/html/index.html'
+                        sh 'cp /workspace/index.html /usr/share/nginx/html/index.html'
                     }
-                    sh "kubectl run hello-world --image=hello-world --labels=${label} --port=80"
+
+                    // Create a Deployment instead of a Pod
+                    sh "kubectl create deployment hello-world --image=hello-world --labels=${label}"
                     sh "kubectl expose deployment hello-world --type=NodePort --port=80"
                 }
             }
-        }
-    }
+        }
+    }
 }
