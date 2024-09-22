@@ -1,30 +1,19 @@
 pipeline {
     agent any
-    
     stages {
-        stage('Setup Kubernetes') {
+        stage('Create Namespace') {
             steps {
                 script {
-                    // Run Kubernetes setup commands directly on the localhost
-                    sh '''
-                        sudo systemctl start kubelet
-                        kubectl wait --for=condition=Ready node --all --timeout=300s
-                        kubectl create namespace python-app --dry-run=client -o yaml | kubectl apply -f -
-                    '''
+                    sh 'kubectl create namespace test-namespace'
                 }
             }
         }
-        
-        stage('Verify Cluster') {
+        stage('Test Namespace') {
             steps {
                 script {
-                    // Run verification commands directly on the local host
-                    sh '''
-                        kubectl get nodes
-                        kubectl get namespaces
-                    '''
+                    sh 'kubectl get namespace test-namespace'
                 }
             }
-       }
+        }
     }
 }
